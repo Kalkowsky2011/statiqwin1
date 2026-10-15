@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="100" fill="#0B0F17"/>
+  <circle cx="256" cy="256" r="180" fill="#151C28" stroke="#10B981" stroke-width="12"/>
+  <circle cx="256" cy="256" r="140" fill="#10B981"/>
+  <path d="M 180 180 Q 256 220 256 310" stroke="#0B0F17" stroke-width="14" fill="none" stroke-linecap="round"/>
+  <path d="M 332 180 Q 256 220 256 310" stroke="#0B0F17" stroke-width="14" fill="none" stroke-linecap="round"/>
+  <text x="256" y="470" font-family="Arial, sans-serif" font-size="44" font-weight="900" fill="#10B981" text-anchor="middle">PROMATCH</text>
+</svg>
