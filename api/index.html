@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#060709" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="description" content="STATIQWIN — Profesjonalna platforma SaaS do analityki tenisa ziemnego, live odds i modeli predykcyjnych AI." />
+  <title>STATIQWIN — Zaawansowana Analityka Tenisowa & Kursy Live</title>
+  <link rel="icon" type="image/png" href="/statiqwin-logo.png" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles/theme.css" />
+</head>
+<body>
+  <!-- App Launch / Startup Splash Screen -->
+  <div id="app-splash-screen" class="app-splash-screen" onclick="dismissSplash()" title="Kliknij, aby pominąć">
+    <div class="splash-ambient-glow"></div>
+    <div class="splash-content">
+      <div class="splash-logo-wrapper">
+        <div class="splash-ring-pulse"></div>
+        <img src="/statiqwin-logo.png" alt="STATIQWIN" class="splash-logo-img" />
+      </div>
+      <div class="splash-brand-text">
+        <span class="splash-text-statiq">STATIQ</span><span class="splash-text-win">WIN</span>
+      </div>
+      <div class="splash-tagline">INTELIGENTNA ANALITYKA TENISOWA</div>
+      
+      <div class="splash-loader-wrap">
+        <div class="splash-loader-bar">
+          <div class="splash-loader-progress"></div>
+        </div>
+        <div class="splash-status-lbl">Inicjalizacja silnika AI...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-container">
+    <!-- PWA Install Banner -->
+    <div id="pwa-banner" class="pwa-banner hidden">
+      <span id="pwa-text">Zainstaluj aplikację na telefonie</span>
+      <div style="display:flex;gap:6px;">
+        <button id="pwa-install-btn" onclick="installPWA()">Zainstaluj</button>
+        <button onclick="closePWABanner()">✕</button>
+      </div>
+    </div>
+
+    <!-- App Header - 9:16 Mobile Optimized -->
+    <header class="app-header">
+      <div class="header-inner">
+        <div class="header-left">
+          <button id="header-pro-btn" class="btn-pro" onclick="openProModal()" title="Kup / Aktywuj dostęp PRO">
+            PRO
+          </button>
+        </div>
+        <div class="brand-box">
+          <a href="#" class="brand-logo-row" title="STATIQWIN">
+            <img src="/statiqwin-logo.png" alt="STATIQWIN Logo" class="brand-logo-img" />
+            <h1 class="brand-title">
+              <span class="brand-statiq">STATIQ</span><span class="brand-win">WIN</span>
+            </h1>
+          </a>
+        </div>
+        <div class="header-actions">
+          <!-- Przycisk logowania (gdy niezalogowany) -->
+          <button id="header-auth-btn" class="btn-user" onclick="handleUserBtnClick()" title="Zaloguj się">
+            <span id="user-btn-icon">👤</span>
+            <span id="user-btn-label">Zaloguj</span>
+          </button>
+
+          <!-- Panel użytkownika (gdy zalogowany: E-mail, Status PRO/FREE, Przycisk Wyloguj) -->
+          <div id="header-user-badge" class="header-user-badge" style="display:none;">
+            <div class="header-user-info" onclick="openProfileModal()" title="Profil użytkownika">
+              <span id="header-user-email" class="header-user-email">user@email.pl</span>
+              <span id="header-user-plan" class="header-user-plan plan-free">FREE</span>
+            </div>
+            <button id="header-logout-btn" class="btn-header-logout" onclick="handleLogout()" title="Wyloguj się">
+              <span class="logout-icon">⎋</span>
+              <span class="logout-text">Wyloguj</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Smart Scanner Card -->
+      <section class="scanner-card">
+        <div class="scanner-header">
+          <div class="scanner-label-row">
+            <span class="scanner-icon">⚡</span>
+            <label for="paste-input" class="scanner-label">Skaner meczowy Flashscore</label>
+          </div>
+          <span class="scanner-status-tag">Auto-detekcja linków</span>
+        </div>
+
+        <div class="scanner-input-wrapper">
+          <div class="scanner-input-inner">
+            <span class="input-link-icon">🔗</span>
+            <input
+              type="url"
+              id="paste-input"
+              class="scanner-input"
+              placeholder="Wklej link do meczu z Flashscore (np. https://www.flashscore.pl/mecz/...)"
+              autocomplete="off"
+              autocapitalize="none"
+              autocorrect="off"
+              spellcheck="false"
+              inputmode="url"
+            />
+            <button class="btn-clear-input" id="btn-clear" onclick="clearInput()" title="Wyczyść" style="display:none;" aria-label="Wyczyść pole tekstowe">✕</button>
+          </div>
+          <div class="scanner-btn-group">
+            <button class="btn btn-scan" id="btn-scan-main" onclick="handleParseText()">
+              <span class="btn-scan-icon">⚡</span> Analizuj mecz
+            </button>
+            <button class="btn btn-clipboard" onclick="handlePasteFromClipboard()" title="Wklej ze schowka">
+              Wklej
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Welcome / App Purpose Section (Widoczny na starcie zamiast domyślnego meczu) -->
+      <section id="welcome-section" class="welcome-card">
+        <div class="welcome-badge">
+          <span class="welcome-dot"></span> INTELIGENTNA ANALITYKA TENISOWA
+        </div>
+        <h2 class="welcome-headline">Zaawansowane analizy meczowe & predykcje AI</h2>
+        <p class="welcome-subtext">
+          STATIQWIN to profesjonalna platforma analityczna do tenisa ziemnego. Wklej powyżej link do dowolnego meczu z Flashscore, a nasz silnik natychmiast przeanalizuje historię H2H, bilans nawierzchni, formę zawodników, wskaże value bety oraz wygeneruje taktyczną prognozę AI.
+        </p>
+
+        <!-- Logowanie CTA (wymagane logowanie) -->
+        <div id="welcome-auth-box" class="welcome-auth-card">
+          <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;">
+            <div style="font-size:24px;line-height:1;">🔑</div>
+            <div style="flex:1;">
+              <div style="font-family:var(--font-display);font-size:14px;font-weight:900;color:#FFF;">
+                Wymagane logowanie do analizy
+              </div>
+              <div style="font-size:12px;color:#BAC8DB;margin-top:2px;line-height:1.45;">
+                Aby przeanalizować mecz z Flashscore, zaloguj się lub załóż darmowe konto e-mail. Otrzymasz <strong>1 darmową analizę PRO</strong> na start!
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button type="button" class="btn btn-scan" style="flex:1;min-height:44px;height:44px;font-size:13px;font-weight:700;" onclick="openAuthModal('login')">
+              <span>Zaloguj się</span>
+            </button>
+            <button type="button" class="btn btn-clipboard" style="flex:1;min-height:44px;height:44px;font-size:13px;font-weight:700;" onclick="openAuthModal('register')">
+              <span>Załóż konto</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 1 Darmowa analiza PRO na start -->
+        <div class="welcome-trial-box">
+          <div class="trial-box-icon">🎁</div>
+          <div class="trial-box-text">
+            <div class="trial-box-title">1 darmowa analiza PRO na start!</div>
+            <div class="trial-box-desc">
+              Każdy użytkownik otrzymuje na start <strong>1 pełną analizę PRO</strong> bez żadnych opłat. Odblokowuje ona wszystkie statystyki, prognozy AI, linie gemów i radar kontuzji.
+            </div>
+          </div>
+        </div>
+
+        <!-- Cechy silnika -->
+        <div class="welcome-features-list">
+          <div class="feature-item">
+            <span class="feature-icon">⚡</span>
+            <span>Kursy live i rynki bukmacherskie pobierane bezpośrednio z linku Flashscore</span>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">🧠</span>
+            <span>Głęboka analiza taktyczna — autorski system AI, który przeanalizował tysiące meczów</span>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">📈</span>
+            <span>Wykrywanie sygnałów Value Bets (+EV) oraz radar ryzyka kontuzji</span>
+          </div>
+        </div>
+
+        <!-- Przycisk przejścia na PRO -->
+        <div class="welcome-cta-banner">
+          <button type="button" class="btn btn-buy-pro" style="margin-bottom:0;height:46px;font-size:13px;width:100%;font-weight:800;" onclick="openProModal()">
+            ⚡ Jeśli chcesz więcej statystyk, przejdź na PRO
+          </button>
+        </div>
+      </section>
+
+      <!-- Results Section -->
+      <div id="results-section">
+        <!-- Trial Active Banner (pojawia się przy wykorzystaniu 1 darmowej analizy) -->
+        <div id="trial-banner-container" style="display:none;"></div>
+
+        <!-- H2H Scoreboard -->
+        <div id="h2h-header" class="scoreboard-card"></div>
+
+        <!-- Live Market Odds -->
+        <div class="card" id="odds-card">
+          <div id="odds-content"></div>
+        </div>
+
+        <!-- 1. AI Advisor -->
+        <div class="card card-featured" id="ai-advisor-card">
+          <div id="ai-advisor-content"></div>
+        </div>
+
+        <!-- 2. Surface Breakdown -->
+        <div class="card" id="surface-card">
+          <div id="surface-content"></div>
+        </div>
+
+        <!-- 3. Basic Stats -->
+        <div class="card" id="basic-stats-card"></div>
+
+        <!-- 4. Form & Momentum -->
+        <div class="card" id="form-card"></div>
+
+        <!-- 5. Match History -->
+        <div class="card" id="history-card">
+          <div id="history-content"></div>
+        </div>
+
+        <!-- 6. Over/Under -->
+        <div class="card" id="ou-card">
+          <div id="ou-content"></div>
+        </div>
+
+        <!-- 7. 1st Set Stats -->
+        <div class="card" id="first-set-card">
+          <div id="first-set-content"></div>
+        </div>
+
+        <!-- 8. Injury Risk -->
+        <div class="card" id="injury-card">
+          <div id="injury-content"></div>
+        </div>
+
+        <!-- 9. AI Verdict -->
+        <div class="card" id="verdict-card">
+          <div id="verdict-content"></div>
+        </div>
+    </main>
+
+    <!-- App Footer -->
+    <footer class="app-footer">
+      <div class="footer-links-grid">
+        <div class="footer-col">
+          <button type="button" class="footer-link" onclick="openLegalModal('privacy')">
+            <span>Polityka prywatności</span>
+          </button>
+          <button type="button" class="footer-link" onclick="openLegalModal('terms')">
+            <span>Regulamin</span>
+          </button>
+        </div>
+        <div class="footer-col">
+          <button type="button" class="footer-link" onclick="openLegalModal('contact')">
+            <span>Kontakt</span>
+          </button>
+          <button type="button" class="footer-link" onclick="openLegalModal('faq')">
+            <span>FAQ</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="footer-divider"></div>
+
+      <div class="footer-bottom-info">
+        <div class="footer-brand-row">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:16px;">⚡</span>
+            <span class="footer-brand-title">STATIQWIN</span>
+          </div>
+        </div>
+        <p class="footer-disclaimer">
+          STATIQWIN to zaawansowana platforma analityczno-statystyczna do tenisa ziemnego. Wszelkie analizy, wskaźniki matematyczne (+EV) i prognozy AI mają charakter wyłącznie edukacyjno-informacyjny. Zakłady wzajemne niosą ryzyko uzależnienia i straty finansowej — dozwolone od lat 18. Graj odpowiedzialnie.
+        </p>
+        <div class="footer-copyright">
+          © 2026 STATIQWIN. Wszelkie prawa zastrzeżone.
+        </div>
+      </div>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <!-- PRO Modal -->
+    <div id="pro-modal" class="modal-backdrop hidden" onclick="handleProModalBackdrop(event)">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div>
+            <h3 class="modal-title">Dostęp STATIQWIN PRO</h3>
+            <p class="modal-subtitle" id="pro-modal-subtitle">Nielimitowane analizy na żywo z autorskim systemem AI</p>
+          </div>
+          <button class="modal-close-btn" onclick="closeProModal()">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="pro-perks-list">
+            <div class="pro-perk-item">
+              <span class="perk-check">✓</span>
+              <div>
+                <div class="perk-title">Nielimitowane mecze Flashscore Live</div>
+                <div class="perk-desc">Szybkie pobieranie statystyk i kursów bezpośrednio z linku.</div>
+              </div>
+            </div>
+            <div class="pro-perk-item">
+              <span class="perk-check">✓</span>
+              <div>
+                <div class="perk-title">Autorski system AI</div>
+                <div class="perk-desc">Autorski model AI, który przeanalizował tysiące meczów tenisowych — prognoza gemów, taktyki i wyniku.</div>
+              </div>
+            </div>
+            <div class="pro-perk-item">
+              <span class="perk-check">✓</span>
+              <div>
+                <div class="perk-title">Sygnały Value Bets (+EV)</div>
+                <div class="perk-desc">Wykrywanie zawyżonych kursów bukmacherskich z przewagą matematyczną.</div>
+              </div>
+            </div>
+            <div class="pro-perk-item">
+              <span class="perk-check">✓</span>
+              <div>
+                <div class="perk-title">Radar ryzyka kontuzji & kreczów</div>
+                <div class="perk-desc">Wczesne ostrzeganie przed przerwami medycznymi MTO i urazami.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Karta dla aktywnych kont PRO (widoczna gdy is_pro === true) -->
+          <div id="pro-active-banner" class="pro-active-banner" style="display:none;">
+            <div class="pro-active-header">
+              <span class="pro-active-check">✓</span>
+              <div>
+                <div class="pro-active-title">Pakiet PRO jest aktywny na Twoim koncie</div>
+                <div class="pro-active-desc">Posiadasz nielimitowany dostęp do wszystkich zaawansowanych funkcji analitycznych, kursów live i modeli AI.</div>
+              </div>
+            </div>
+            <div class="pro-active-tag">STATUS SUBSKRYPCJI: AKTYWNY</div>
+          </div>
+
+          <div class="pro-pricing-box">
+            <div>
+              <div class="pricing-label">Subskrypcja miesięczna</div>
+              <div class="pricing-price">29,99 zł <span class="pricing-period">/ miesiąc</span></div>
+            </div>
+            <span class="pricing-badge">LEMON SQUEEZY</span>
+          </div>
+
+          <button class="btn btn-buy-pro" onclick="handleLemonSqueezyCheckout()">
+            🍋 Kup dostęp przez Lemon Squeezy
+          </button>
+
+          <div class="pro-voucher-box">
+            <div class="voucher-title">Aktywuj kod licencyjny</div>
+            <div style="display:flex;gap:6px;">
+              <input
+                type="text"
+                id="license-key-input"
+                class="voucher-input"
+                placeholder="Wklej tutaj swój kod z Lemon Squeezy..."
+                autocomplete="off"
+              />
+              <button class="btn btn-scan voucher-btn" onclick="handleActivateLicense()">
+                Aktywuj kod
+              </button>
+            </div>
+            <div id="license-msg" class="license-msg" style="display:none;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Auth Modal (Logowanie / Rejestracja) -->
+    <div id="auth-modal" class="modal-backdrop hidden" onclick="handleAuthModalBackdrop(event)">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:34px;height:34px;border-radius:8px;background:#06080E;border:1px solid #1E283D;display:flex;align-items:center;justify-content:center;font-size:16px;">
+              ⚡
+            </div>
+            <div>
+              <h3 class="modal-title" id="auth-modal-title">Konto STATIQWIN</h3>
+              <p class="modal-subtitle">Zaloguj się, aby zsynchronizować licencję PRO</p>
+            </div>
+          </div>
+          <button class="modal-close-btn" onclick="closeAuthModal()">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="auth-tabs">
+            <button type="button" id="tab-login" class="auth-tab active" onclick="switchAuthTab('login')">Zaloguj się</button>
+            <button type="button" id="tab-register" class="auth-tab" onclick="switchAuthTab('register')">Załóż konto</button>
+          </div>
+
+          <form id="auth-form" onsubmit="handleAuthSubmit(event)">
+            <div class="auth-field">
+              <label class="auth-label" for="auth-email">Adres E-mail</label>
+              <div class="auth-input-wrapper">
+                <span class="auth-input-icon">✉</span>
+                <input type="email" id="auth-email" class="auth-input" placeholder="twoj@email.pl" required autocomplete="email" />
+              </div>
+            </div>
+
+            <div class="auth-field" style="margin-top:12px;">
+              <label class="auth-label" for="auth-password">Hasło</label>
+              <div class="auth-input-wrapper">
+                <span class="auth-input-icon">🔒</span>
+                <input type="password" id="auth-password" class="auth-input" placeholder="Wprowadź hasło" required autocomplete="current-password" />
+              </div>
+            </div>
+
+            <div id="auth-msg" class="license-msg" style="display:none;margin-top:12px;"></div>
+
+            <button type="submit" id="auth-submit-btn" class="btn btn-scan" style="width:100%;height:44px;margin-top:16px;font-size:14px;">
+              Zaloguj się
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Profile Modal (dla zalogowanych) -->
+    <div id="profile-modal" class="modal-backdrop hidden" onclick="handleProfileModalBackdrop(event)">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div>
+            <h3 class="modal-title">Twój Profil</h3>
+            <p class="modal-subtitle">Dane konta i subskrypcja</p>
+          </div>
+          <button class="modal-close-btn" onclick="closeProfileModal()">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="profile-avatar-row">
+            <div id="profile-avatar-icon" class="profile-avatar">SW</div>
+            <div>
+              <div id="profile-user-name" style="font-size:14px;font-weight:700;color:#FFF;">Użytkownik</div>
+              <p class="modal-subtitle" id="profile-user-email" style="margin-top:2px;">user@statiqwin.com</p>
+            </div>
+          </div>
+
+          <div id="profile-status-box" class="profile-status-box">
+            <div>
+              <div style="font-size:11px;color:var(--text-secondary);font-weight:600;text-transform:uppercase;letter-spacing:0.04em;">Status Konta:</div>
+              <div id="profile-status-text" style="font-size:15px;font-weight:800;color:var(--accent-lime);margin-top:3px;">STATIQWIN PRO</div>
+            </div>
+            <span id="profile-status-badge" class="pricing-badge">PRO</span>
+          </div>
+
+          <div style="margin-top:16px;display:flex;flex-direction:column;gap:10px;">
+            <button id="profile-pro-action-btn" class="btn btn-buy-pro" style="margin-bottom:0;" onclick="closeProfileModal(); openProModal();">
+              Zarządzaj Licencją PRO
+            </button>
+            <button type="button" class="btn btn-clipboard" style="width:100%;min-height:44px;height:44px;color:#EF4444;border-color:rgba(239,68,68,0.35);background:rgba(239,68,68,0.06);" onclick="handleLogout()">
+              Wyloguj się
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Legal & Info Modal (Polityka prywatności, Regulamin, Kontakt, FAQ) -->
+    <div id="legal-modal" class="modal-backdrop hidden" onclick="handleLegalModalBackdrop(event)">
+      <div class="modal-card legal-modal-card">
+        <div class="legal-modal-header">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:34px;height:34px;border-radius:8px;background:#06080E;border:1px solid #1E283D;display:flex;align-items:center;justify-content:center;font-size:16px;">
+              ⚖️
+            </div>
+            <div>
+              <h3 class="modal-title" id="legal-modal-title">Centrum Informacji</h3>
+              <p class="modal-subtitle">Polityka prywatności, regulamin, kontakt i FAQ</p>
+            </div>
+          </div>
+          <button class="modal-close-btn" onclick="closeLegalModal()">✕</button>
+        </div>
+
+        <div class="legal-tabs-bar">
+          <button type="button" id="tab-btn-privacy" class="legal-tab-btn active" onclick="switchLegalTab('privacy')">
+            Polityka prywatności
+          </button>
+          <button type="button" id="tab-btn-terms" class="legal-tab-btn" onclick="switchLegalTab('terms')">
+            Regulamin
+          </button>
+          <button type="button" id="tab-btn-contact" class="legal-tab-btn" onclick="switchLegalTab('contact')">
+            Kontakt
+          </button>
+          <button type="button" id="tab-btn-faq" class="legal-tab-btn" onclick="switchLegalTab('faq')">
+            FAQ
+          </button>
+        </div>
+
+        <div class="legal-modal-body" id="legal-modal-scroll">
+          <!-- 1. Polityka prywatności -->
+          <div id="legal-pane-privacy" class="legal-section-content active">
+            <div class="legal-lead">Polityka Prywatności i Ochrony Danych Osobowych serwisu STATIQWIN</div>
+            
+            <p class="legal-p">
+              Niniejsza Polityka Prywatności określa zasady przetwarzania i ochrony danych osobowych użytkowników korzystających z serwisu <strong>STATIQWIN</strong>, zgodnie z Ogólnym Rozporządzeniem o Ochronie Danych (RODO / GDPR - Rozporządzenie Parlamentu Europejskiego i Rady (UE) 2016/679).
+            </p>
+
+            <div class="legal-callout">
+              <strong>🔒 Bezpieczeństwo i Prywatność przede wszystkim:</strong> Nie sprzedajemy, nie wynajmujemy ani nie przekazujemy Twoich danych podmiotom marketingowym. Dane służą wyłącznie do personalizacji konta i działania silnika analitycznego.
+            </div>
+
+            <h4 class="legal-h4">1. Administrator Danych Osobowych</h4>
+            <p class="legal-p">
+              Administratorem danych osobowych serwisu STATIQWIN jest zespół projektowy STATIQWIN. W sprawach związanych z danymi osobowymi możesz skontaktować się z naszym Inspektorem Ochrony Danych pod adresem: <a href="mailto:privacy@statiqwin.com" style="color:#38BDF8;text-decoration:none;">privacy@statiqwin.com</a>.
+            </p>
+
+            <h4 class="legal-h4">2. Jakie dane przetwarzamy?</h4>
+            <ul class="legal-list">
+              <li><strong>Dane rejestracyjne:</strong> Adres e-mail, nazwa konta (imię/pseudonim) oraz bezpiecznie zapisane hasło dostępowe do Twojego konta.</li>
+              <li><strong>Dane pamięci lokalnej (Local Storage):</strong> W celu wygody sesji w pamięci Twojej przeglądarki zapisujemy token uwierzytelnienia, status licencji PRO oraz historię przeanalizowanych meczów.</li>
+            </ul>
+
+            <h4 class="legal-h4">3. Cel i podstawa prawna przetwarzania</h4>
+            <ul class="legal-list">
+              <li>Świadczenie usługi analizy statystycznej i predykcji tenisa ziemnego (art. 6 ust. 1 lit. b RODO).</li>
+              <li>Synchronizacja i weryfikacja licencji subskrypcyjnych STATIQWIN PRO (art. 6 ust. 1 lit. b RODO).</li>
+              <li>Zapewnienie bezpieczeństwa, ochrona przed nadużyciami darmowych analiz oraz celom statystycznym (art. 6 ust. 1 lit. f RODO).</li>
+            </ul>
+
+            <h4 class="legal-h4">4. Prawa Użytkownika (RODO)</h4>
+            <p class="legal-p">Każdemu użytkownikowi przysługuje:</p>
+            <ul class="legal-list">
+              <li>Prawo do wglądu w swoje dane oraz otrzymania ich kopii.</li>
+              <li>Prawo do sprostowania, modyfikacji lub usunięcia konta („prawo do bycia zapomnianym”).</li>
+              <li>Prawo do ograniczenia przetwarzania oraz przenoszenia danych.</li>
+              <li>Prawo do wniesienia skargi do właściwego organu nadzorczego (w Polsce: Prezes Urzędu Ochrony Danych Osobowych - PUODO).</li>
+            </ul>
+
+            <h4 class="legal-h4">5. Pliki Cookies i technologie śledzące</h4>
+            <p class="legal-p">
+              STATIQWIN nie stosuje inwazyjnych ciasteczek profilujących ani zewnętrznych sieci reklamowych. Używamy wyłącznie technologii pamięci podręcznej przeglądarki (Local Storage) niezbędnej do prawidłowego działania sesji użytkownika.
+            </p>
+          </div>
+
+          <!-- 2. Regulamin -->
+          <div id="legal-pane-terms" class="legal-section-content">
+            <div class="legal-lead">Regulamin Serwisu i Świadczenia Usług STATIQWIN</div>
+
+            <p class="legal-p">
+              Niniejszy Regulamin określa zasady korzystania z platformy analitycznej <strong>STATIQWIN</strong>, prawa i obowiązki użytkowników oraz warunki subskrypcji STATIQWIN PRO.
+            </p>
+
+            <div class="legal-callout warning">
+              <strong>⚠️ Ważne ostrzeżenie i wyłączenie odpowiedzialności:</strong>
+              STATIQWIN nie jest firmą bukmacherską ani stroną przyjmującą zakłady wzajemne. Serwis ma charakter wyłącznie analityczno-edukacyjny. Wszelkie wskaźniki (+EV, Value Bets, prognozy AI) nie stanowią rekomendacji finansowej ani gwarancji zysku.
+            </div>
+
+            <h4 class="legal-h4">1. Postanowienia Ogólne</h4>
+            <ul class="legal-list">
+              <li>Serwis STATIQWIN dostarcza zaawansowane narzędzia statystyczne do analizy meczów tenisa ziemnego oparte o algorytmy matematyczne oraz autorski system AI, który przeanalizował tysiące meczów tenisowych.</li>
+              <li>Dostęp do serwisu wymaga akceptacji niniejszego Regulaminu oraz Polityki Prywatności.</li>
+              <li>Użytkownik zobowiązuje się do korzystania z serwisu w sposób zgodny z prawem i dobrymi obyczajami.</li>
+            </ul>
+
+            <h4 class="legal-h4">2. Wymóg Pełnoletności (18+)</h4>
+            <p class="legal-p">
+              Treści związane z rynkami bukmacherskimi i kursami sportowymi przeznaczone są wyłącznie dla osób, które ukończyły <strong>18 lat</strong>. Zakłady bukmacherskie wiążą się z ryzykiem uzależnienia i utraty kapitału. Graj odpowiedzialnie.
+            </p>
+
+            <h4 class="legal-h4">3. Plany Dostępowe i Subskrypcje PRO</h4>
+            <ul class="legal-list">
+              <li><strong>Pakiet Darmowy (FREE):</strong> Każdy zarejestrowany użytkownik otrzymuje na start <strong>1 darmową analizę PRO</strong>. Pozwala ona na odblokowanie pełnego raportu meczowego. Kolejne mecze w planie darmowym obejmują podstawowe statystyki H2H i bilans setowy.</li>
+              <li><strong>Pakiet STATIQWIN PRO:</strong> Dostęp nielimitowany do analiz live z Flashscore, radaru kontuzji, linii gemowych Over/Under, wskaźników Value Bets oraz taktycznych prognoz autorskiego systemu AI.</li>
+              <li>Subskrypcje są realizowane przez międzynarodowego licencjonowanego operatora <em>Lemon Squeezy</em> (Merchant of Record). Użytkownik ma prawo w każdej chwili zarządzać swoją subskrypcją lub ją anulować.</li>
+            </ul>
+
+            <h4 class="legal-h4">4. Własność Intelektualna</h4>
+            <p class="legal-p">
+              Układ graficzny, algorytmy kalkulatora szans, struktura kodu oraz nazwa STATIQWIN są prawnie chronione. Zabrania się masowego scrapingu, dekompilacji lub odsprzedaży danych generowanych przez serwis bez pisemnej zgody.
+            </p>
+          </div>
+
+          <!-- 3. Kontakt -->
+          <div id="legal-pane-contact" class="legal-section-content">
+            <div class="legal-lead">Skontaktuj się z zespołem STATIQWIN</div>
+
+            <p class="legal-p">
+              Masz pytania dotyczące analizy meczów, chcesz zgłosić sugestię ulepszenia algorytmu lub potrzebujesz pomocy z licencją PRO? Jesteśmy do Twojej dyspozycji.
+            </p>
+
+            <div class="contact-info-card">
+              <div class="contact-icon-box">✉</div>
+              <div style="flex:1;">
+                <div style="font-size:12px;color:#94A3B8;font-weight:700;text-transform:uppercase;">Bezpośredni E-mail:</div>
+                <a href="mailto:kontakt@statiqwin.com" style="font-size:14px;font-weight:800;color:#38BDF8;text-decoration:none;">kontakt@statiqwin.com</a>
+                <div style="font-size:11px;color:#64748B;margin-top:2px;">Wsparcie PRO & pytania ogólne (odpowiedź w 2-12h)</div>
+              </div>
+            </div>
+
+            <h4 class="legal-h4">Formularz szybkiego kontaktu</h4>
+            <form id="legal-contact-form" onsubmit="handleContactSubmit(event)" style="display:flex;flex-direction:column;gap:12px;">
+              <div class="auth-field">
+                <label class="auth-label" for="contact-email">Twój adres e-mail</label>
+                <div class="auth-input-wrapper">
+                  <span class="auth-input-icon">✉</span>
+                  <input type="email" id="contact-email" class="auth-input" placeholder="twoj@email.com" required />
+                </div>
+              </div>
+
+              <div class="auth-field">
+                <label class="auth-label" for="contact-subject">Temat wiadomości</label>
+                <div class="auth-input-wrapper">
+                  <span class="auth-input-icon">📌</span>
+                  <select id="contact-subject" class="auth-input" style="background:#070A11;cursor:pointer;">
+                    <option value="pro">Pytanie o konto lub licencję PRO</option>
+                    <option value="bug">Zgłoszenie błędu / problem z linkiem Flashscore</option>
+                    <option value="feature">Sugestia nowej funkcji w analizach</option>
+                    <option value="cooperation">Współpraca / Partnerstwo</option>
+                    <option value="other">Inny temat</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="auth-field">
+                <label class="auth-label" for="contact-message">Treść wiadomości</label>
+                <textarea id="contact-message" class="auth-input" rows="4" placeholder="Opisz szczegółowo swoje pytanie lub problem..." required style="height:90px;padding-top:10px;resize:vertical;"></textarea>
+              </div>
+
+              <div id="contact-status-msg" style="display:none;padding:10px 12px;border-radius:8px;font-size:12px;font-weight:700;text-align:center;"></div>
+
+              <button type="submit" id="contact-submit-btn" class="btn btn-scan" style="width:100%;min-height:44px;height:44px;font-size:13px;margin-top:4px;">
+                Wyślij wiadomość do supportu
+              </button>
+            </form>
+          </div>
+
+          <!-- 4. FAQ -->
+          <div id="legal-pane-faq" class="legal-section-content">
+            <div class="legal-lead">Najczęściej Zadawane Pytania (FAQ)</div>
+
+            <div class="faq-accordion">
+              <div class="faq-item open">
+                <button type="button" class="faq-question" onclick="toggleFaqItem(this)">
+                  <span>Czym jest STATIQWIN i jak działa silnik analityczny?</span>
+                  <span class="faq-icon">▼</span>
+                </button>
+                <div class="faq-answer">
+                  STATIQWIN to zaawansowana platforma analityczna dedykowana tenisowi ziemnemu. Pobiera dane meczowe z Flashscore, a następnie przetwarza historię H2H, bilans na nawierzchniach (trawa, mączka, hard), formę zawodników, radar przerw medycznych i kreczów. Na koniec autorski system AI, który przeanalizował tysiące meczów tenisowych, generuje taktyczną prognozę wyniku i weryfikuje rynki bukmacherskie pod kątem wartości (+EV).
+                </div>
+              </div>
+
+              <div class="faq-item">
+                <button type="button" class="faq-question" onclick="toggleFaqItem(this)">
+                  <span>Jak odebrać 1 darmową analizę PRO na start?</span>
+                  <span class="faq-icon">▼</span>
+                </button>
+                <div class="faq-answer">
+                  Każdy nowo zarejestrowany użytkownik automatycznie otrzymuje 1 pełną analizę PRO za 0 zł. Wystarczy wkleić dowolny link do meczu z Flashscore — silnik odblokuje wszystkie statystyki, radar kontuzji i prognozę AI.
+                </div>
+              </div>
+
+              <div class="faq-item">
+                <button type="button" class="faq-question" onclick="toggleFaqItem(this)">
+                  <span>Czy prognozy AI gwarantują wygraną w zakładach?</span>
+                  <span class="faq-icon">▼</span>
+                </button>
+                <div class="faq-answer">
+                  Nie. W tenisie ziemnym zawsze występuje czynnik losowy (pogoda, dyspozycja dnia, nagłe kontuzje). Nasz silnik wskazuje zakłady z przewagą matematyczną (+EV) w oparciu o statystykę, jednak żadne narzędzie nie daje 100% gwarancji wygranej.
+                </div>
+              </div>
+
+              <div class="faq-item">
+                <button type="button" class="faq-question" onclick="toggleFaqItem(this)">
+                  <span>Jak działa rejestracja i logowanie w serwisie?</span>
+                  <span class="faq-icon">▼</span>
+                </button>
+                <div class="faq-answer">
+                  Rejestracja jest całkowicie bezpłatna i wymaga jedynie podania adresu e-mail oraz hasła. Po utworzeniu konta zyskujesz natychmiastowy dostęp do platformy oraz 1 darmową analizę PRO na start. W każdej chwili możesz także aktywować kod licencyjny w oknie PRO.
+                </div>
+              </div>
+
+              <div class="faq-item">
+                <button type="button" class="faq-question" onclick="toggleFaqItem(this)">
+                  <span>Jak aktywować pełną subskrypcję PRO?</span>
+                  <span class="faq-icon">▼</span>
+                </button>
+                <div class="faq-answer">
+                  Kliknij przycisk „Zarządzaj Licencją PRO” w nagłówku. Możesz wykupić dostęp przez bezpiecznego operatora Lemon Squeezy lub wkleić unikalny kod licencyjny otrzymany po zakupie.
+                </div>
+              </div>
+
+              <div class="faq-item">
+                <button type="button" class="faq-question" onclick="toggleFaqItem(this)">
+                  <span>Jakie turnieje i rozgrywki są obsługiwane?</span>
+                  <span class="faq-icon">▼</span>
+                </button>
+                <div class="faq-answer">
+                  Obsługujemy wszystkie turnieje dostępne na Flashscore: Wielki Szlem (Wimbledon, Roland Garros, US Open, Australian Open), turnieje ATP Tour, WTA Tour oraz turnieje rangi Challenger i ITF.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
